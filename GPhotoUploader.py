@@ -94,6 +94,18 @@ def createItem(service, upload_token, albumId):
     # return r.content
 
 
+def get_all_albums(service, http, ):
+    ret_map = {}
+    request = service.albums().list()
+    while request is not None:
+        albums_in_photos = request.execute(http=http)
+        if 'albums' in albums_in_photos:
+            for album_in_photos in albums_in_photos['albums']:
+                ret_map[str(album_in_photos['title']).strip()] = album_in_photos['id']
+
+        request = service.albums().list_next(request, albums_in_photos)
+
+    return ret_map
 
 store = file.Storage('token.json')
 creds = store.get()
@@ -104,22 +116,16 @@ if not creds or creds.invalid:
 http = httplib2.Http()
 http = creds.authorize(http)
 service = build('photoslibrary', 'v1', http=creds.authorize(Http()))
+map_albums = get_all_albums(service, http)
 
 for root, dirs, files in os.walk(folder):
     for dir in dirs:
-        album_name = dir
+        album_name = dir.strip()
         album_id = ''
         print ("Album ", album_name)
-        request = service.albums().list()
-        while request is not None:
-            albums_in_photos = request.execute(http=http)
-            if 'albums' in albums_in_photos:
-                for album_in_photos in albums_in_photos['albums']:
-                    if str(album_in_photos['title']).strip() == album_name.strip():
-                        album_id = album_in_photos['id']
-                        break
-            request = service.albums().list_next(request, albums_in_photos)
-        if not album_id:
+        if album_name in map_albums:
+            album_id = map_albums[album_name]
+        else:
             # Create an Album
             d = {
                 "album": {
