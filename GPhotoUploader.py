@@ -10,7 +10,7 @@ import requests
 import _thread
 from threading import Thread
 import subprocess
-
+import urllib.request
 
 # https://stackoverflow.com/questions/51746830/can-upload-photo-when-using-the-google-photos-api/52021690#52021690
 
@@ -160,14 +160,14 @@ for root, dirs, files in os.walk(folder):
                                 }
                             ]
                         }
-                        ret = service.mediaItems().batchCreate(body=d).execute(http=http)
-                        if 'error' in ret:
-                            if ret['code'] == 500:
+                        try:
+                            ret = service.mediaItems().batchCreate(body=d).execute(http=http)
+                            moveto_archive(image_file, dir)
+                        except urllib.request.HTTPError as err:
+                            if err.code == 500:
                                 http = httplib2.Http()
                                 http = creds.authorize(http)
                                 service = build('photoslibrary', 'v1', http=creds.authorize(Http()))
-
-                moveto_archive(image_file, dir)
 
                 print("Photos", image_file)
 
