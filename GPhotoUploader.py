@@ -16,22 +16,28 @@ import subprocess
 
 folder = '/Users/tanmoy.sil/Downloads/Test/'
 archive_path = '/Users/tanmoy.sil/Downloads/Archive/'
+error_path = '/Users/tanmoy.sil/Downloads/Error/'
 
 def upload(service, file):
-    f = open(file, 'rb').read();
+    try:
+        f = open(file, 'rb').read();
 
-    url = 'https://photoslibrary.googleapis.com/v1/uploads'
-    headers = {
-        'Authorization': "Bearer " + service._http.request.credentials.access_token,
-        'Content-Type': 'application/octet-stream',
-        'X-Goog-Upload-File-Name': file,
-        'X-Goog-Upload-Protocol': "raw",
-    }
+        url = 'https://photoslibrary.googleapis.com/v1/uploads'
+        headers = {
+            'Authorization': "Bearer " + service._http.request.credentials.access_token,
+            'Content-Type': 'application/octet-stream',
+            'X-Goog-Upload-File-Name': file,
+            'X-Goog-Upload-Protocol': "raw",
+        }
 
-    r = requests.post(url, data=f, headers=headers)
+        r = requests.post(url, data=f, headers=headers)
+        return r.content
+
+    except:
+        move_file(file, error_path)
     # print('\nUpload token: %s' % r.content)
 
-    return r.content
+
 
 def move_file(src, dest):
     # copy file from source to destination
@@ -141,19 +147,26 @@ for root, dirs, files in os.walk(folder):
             threads = []
             for f in files1:
                 image_file = folder + dir + '/' + f
-
-                upload_token = upload(service, image_file)
-                d = {
-                    "albumId": album_id,
-                    "newMediaItems": [
-                        {
-                            "simpleMediaItem": {
-                                "uploadToken": upload_token.decode('utf-8')
-                            }
+                if os.path.getsize(image_file) > 0:
+                    upload_token = upload(service, image_file)
+                    if upload_token:
+                        d = {
+                            "albumId": album_id,
+                            "newMediaItems": [
+                                {
+                                    "simpleMediaItem": {
+                                        "uploadToken": upload_token.decode('utf-8')
+                                    }
+                                }
+                            ]
                         }
-                    ]
-                }
-                ret = service.mediaItems().batchCreate(body=d).execute(http=http)
+                        ret = service.mediaItems().batchCreate(body=d).execute(http=http)
+                        if 'error' in ret:
+                            if ret['code'] == 500:
+                                http = httplib2.Http()
+                                http = creds.authorize(http)
+                                service = build('photoslibrary', 'v1', http=creds.authorize(Http()))
+
                 moveto_archive(image_file, dir)
 
                 print("Photos", image_file)
