@@ -15,6 +15,6 @@ _Optional Step:_ DataSanityCheck.Py is used to find file not part of any Albums 
 folder. 
 
 ### Notes
-- You might want to take Google Storage Subscription during this upload process, because uploader will upload the file in full resolution. Once the files are uploaded you can resize it via Google Photos -> Settings -> Compress photos & videos to high quality. This will take some time to resize your photos 16 meg size which is unlimited. Once the process is complete you can unsubscribe from additional storage.
-- credentials.json - we need this file for authentication purpose. Please read this link [Get started with REST](https://developers.google.com/photos/library/guides/get-started), to obtain an credential from Google. 
+- You might want to take Google Storage Subscription during this upload process, because uploader will upload the file in full resolution. Once the files are uploaded you can resize it via Google Photos -> Settings -> `Recover Storage`. This will take some time to resize your photos 16 meg size which is unlimited. Once the process is complete you can unsubscribe from additional storage.
+- `credentials.json` - we need this file for authentication purpose. Please read this link [Get started with REST](https://developers.google.com/photos/library/guides/get-started), to obtain an credential from Google. 
     
