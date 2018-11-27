@@ -6,6 +6,10 @@ source_path = '/Users/tanmoy.sil/Pictures/Google Photos/'
 destination_path = '/Users/tanmoy.sil/Downloads/Target/'
 config_file_location = '/Users/tanmoy.sil/Downloads/Flickr/72157697558947470_9118eb201e2c_part1/albums.json'
 
+# This program read the Flickr JSON (from config_file_location) and move all the pictures (from source_path) to
+# destination_path, with Album name as Folder name
+
+
 def find_file(name, path):
     # find file in given path (the first match)
     for root, dirs, files in os.walk(path):
@@ -17,8 +21,8 @@ def find_file(name, path):
             if res: return res
 
 
-def copy_file(src, dest):
-    # copy file from source to destination
+def move_file(src, dest):
+    # move file from source to destination
     try:
         shutil.move(src, dest)
     # eg. source and destination are the same file
@@ -29,23 +33,24 @@ def copy_file(src, dest):
         print('Error: {0}'.format(e.strerror))
 
 
+def main():
+    if not os.path.exists(destination_path):
+        os.mkdir(destination_path)
 
-if not os.path.exists(destination_path):
-    os.mkdir(destination_path)
+    if config_file_location:
+        with open(config_file_location, 'r') as f:
+            datastore = json.load(f)
 
-if config_file_location:
-    with open(config_file_location, 'r') as f:
-        datastore = json.load(f)
+        for album in datastore['albums']:
+            path_dir = destination_path + album['title'].strip()
+            if not os.path.exists(path_dir):
+                os.mkdir(path_dir)
 
-    for album in datastore['albums']:
-        path_dir = destination_path + album['title'].strip()
-        if not os.path.exists(path_dir):
-            os.mkdir(path_dir)
-
-        for photo in album['photos']:
-            s_path = find_file(photo, source_path)
-            if s_path: copy_file(s_path, path_dir)
-            print(s_path)
-            # break
+            for photo in album['photos']:
+                s_path = find_file(photo, source_path)
+                if s_path: move_file(s_path, path_dir)
+                print(s_path)
 
 
+if __name__ == '__main__':
+main()
